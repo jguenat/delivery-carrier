@@ -19,8 +19,8 @@ _logger = logging.getLogger(__name__)
 
 _compile_itemid = re.compile(r"[^0-9A-Za-z+\-_]")
 _compile_itemnum = re.compile(r"[^0-9]")
-AUTH_PATH = "/WEDECOAuth/token"
-GENERATE_LABEL_PATH = "/api/barcode/v1/generateAddressLabel"
+AUTH_PATH = "/OAuth/token"
+GENERATE_LABEL_PATH = "/barcode/v1/generateAddressLabel"
 
 DISALLOWED_CHARS_MAPPING = {
     "|": "",
@@ -253,9 +253,8 @@ class PostlogisticsWebService:
 
         client_id = delivery_carrier.postlogistics_client_id
         client_secret = delivery_carrier.postlogistics_client_secret
-        authentication_url = urllib.parse.urljoin(
-            delivery_carrier.postlogistics_endpoint_url or "", AUTH_PATH
-        )
+        # OAuth endpoint is always at api.post.ch, not at the API base URL
+        authentication_url = f"https://api.post.ch{AUTH_PATH}"
 
         if not (client_id and client_secret):
             raise UserError(
@@ -273,7 +272,7 @@ class PostlogisticsWebService:
                 "grant_type": "client_credentials",
                 "client_id": client_id,
                 "client_secret": client_secret,
-                "scope": "WEDEC_BARCODE_READ",
+                "scope": "DCAPI_BARCODE_READ",
             },
             timeout=60,
         )
